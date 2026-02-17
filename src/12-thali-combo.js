@@ -54,16 +54,50 @@
  */
 export function createThaliDescription(thali) {
   // Your code here
+  if (typeof thali !== "object" || Array.isArray(thali) || thali === null) return "";
+  if (!thali.hasOwnProperty("name") || !thali.hasOwnProperty("items") || !thali.hasOwnProperty("price") || !thali.hasOwnProperty("isVeg")) return "";
+  const cleanedItems = thali.items.map(item => String(item).trim()).join(", ");
+  return `${thali.name.toUpperCase()} (${thali.isVeg ? "Veg" : "Non-Veg"}) - Items: ${cleanedItems} - Rs.${thali.price.toFixed(2)}`
 }
 
 export function getThaliStats(thalis) {
   // Your code here
+  if (!Array.isArray(thalis) || thalis.length === 0) return null;
+  const totalPrice = thalis.reduce((acc, curr) => acc + curr.price, 0);
+  const avgPrice = (totalPrice / thalis.length).toFixed(2);
+  return {
+    totalThalis: thalis.length,
+    vegCount: thalis.filter(thali => thali.isVeg).length,
+    nonVegCount: thalis.filter(thali => !thali.isVeg).length,
+    avgPrice,
+    cheapest: Math.min(...thalis.map(t => t.price)),
+    costliest: Math.max(...thalis.map(t => t.price)),
+    names: thalis.map(thali => thali.name)
+  }
 }
 
 export function searchThaliMenu(thalis, query) {
-  // Your code here
+  if (!Array.isArray(thalis) || typeof query !== "string") return [];
+  const lowerQuery = query.toLowerCase();
+  return thalis.filter(thali => {
+    const nameMatch = thali.name && thali.name.toLowerCase().includes(lowerQuery);
+    const itemsMatch = thali.items.some(item => item.toLowerCase().includes(lowerQuery));
+    return nameMatch || itemsMatch;
+  });
 }
 
+
 export function generateThaliReceipt(customerName, thalis) {
-  // Your code here
+  if (typeof customerName !== "string" || !Array.isArray(thalis) || thalis.length === 0) return "";
+  const lineItems = thalis.map(thali => `- ${thali.name} x Rs.${thali.price.toFixed(2)}`).join("\n");
+  const total = thalis.reduce((acc, thali) => acc + thali.price, 0).toFixed(2);
+  const count = thalis.length;
+  return `THALI RECEIPT
+---
+Customer: ${customerName.toUpperCase()}
+${lineItems}
+---
+Total: Rs.${total}
+Items: ${count}`;
 }
+
